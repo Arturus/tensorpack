@@ -10,6 +10,7 @@ from ...utils import logger
 from ...utils.loadcaffe import get_caffe_pb
 from ...utils.fs import mkdir_p, download, get_dataset_path
 from ...utils.timer import timed_operation
+from ...utils.image import read_image
 from ..base import RNGDataFlow
 
 __all__ = ['ILSVRCMeta', 'ILSVRC12', 'ILSVRC12Files']
@@ -181,7 +182,7 @@ class ILSVRC12(ILSVRC12Files):
     Produces uint8 ILSVRC12 images of shape [h, w, 3(BGR)], and a label between [0, 999].
     """
     def __init__(self, dir, name, meta_dir=None,
-                 shuffle=None, dir_structure=None):
+                 shuffle=None, dir_structure=None, bgr=True):
         """
         Args:
             dir (str): A directory containing a subdir named ``name``,
@@ -246,6 +247,7 @@ class ILSVRC12(ILSVRC12Files):
         """
         super(ILSVRC12, self).__init__(
             dir, name, meta_dir, shuffle, dir_structure)
+        self.bgr = bgr
 
     """
     There are some CMYK / png images, but cv2 seems robust to them.
@@ -253,7 +255,7 @@ class ILSVRC12(ILSVRC12Files):
     """
     def __iter__(self):
         for fname, label in super(ILSVRC12, self).__iter__():
-            im = cv2.imread(fname, cv2.IMREAD_COLOR)
+            im = read_image(fname, bgr=self.bgr)
             assert im is not None, fname
             yield [im, label]
 
